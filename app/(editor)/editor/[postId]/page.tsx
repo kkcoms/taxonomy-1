@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
 import { Editor } from "@/components/editor"
+import { Microphone } from "@/app/(speech)/src/app/components/Microphone"
 
 async function getPostForUser(postId: Post["id"], userId: User["id"]) {
   return await db.post.findFirst({
@@ -33,13 +34,12 @@ export default async function EditorPage({ params }: EditorPageProps) {
   }
 
   return (
-    <Editor
+    <><Editor
       post={{
         id: post.id,
         title: post.title,
         content: post.content,
         published: post.published,
-      }}
-    />
+      }} /><Microphone /></>
   )
 }

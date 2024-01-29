@@ -85,7 +85,10 @@
     "stripe": "^11.18.0",
     "tailwind-merge": "^1.12.0",
     "tailwindcss-animate": "^1.0.5",
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "dotenv": "^16.4.1",
+    "openai": "^4.26.0",
+    "react-voice-recorder-player": "^1.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.1",
@@ -120,3 +123,5 @@
     "unist-util-visit": "^4.1.2"
   }
 }
+
+
