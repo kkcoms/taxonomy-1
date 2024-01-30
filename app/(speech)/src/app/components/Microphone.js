@@ -1,22 +1,30 @@
-// microphone.tsx
-
-"use client";
-
-import React, { useState } from 'react';
+// microphone.js
+import React, { useState, useContext } from 'react';
 import { useRecordVoice } from "app/(speech)/src/hooks/useRecordVoice.js";
 import { IconMicrophone } from "app/(speech)/src/app/components/IconMicrophone.js";
+import TranscriptionContext from './TranscriptionContext';
 
 const Microphone = () => {
-  const { startRecording, stopRecording, text } = useRecordVoice();
   const [isRecording, setIsRecording] = useState(false);
+  const { setTranscription, transcription } = useContext(TranscriptionContext); // Add transcription to the destructured values
+
+  // Define the callback function to handle the transcription completion
+  const handleTranscriptionComplete = (transcriptionText) => {
+    setTranscription(transcriptionText);
+    console.log("Microphone.js - Transcription updated:", transcriptionText);
+  };
+
+  const { startRecording, stopRecording } = useRecordVoice(handleTranscriptionComplete);
 
   const toggleRecording = () => {
     if (!isRecording) {
       setIsRecording(true);
       startRecording();
+      console.log("Microphone.js - Microphone component started recording");
     } else {
       setIsRecording(false);
       stopRecording();
+      console.log("Microphone.js - Microphone component stopped recording");
     }
   };
 
@@ -38,10 +46,9 @@ const Microphone = () => {
         {isRecording ? (
           <span className="text-red-500">Recording in progress... Click to stop.</span>
         ) : (
-          text ? <span className="text-green-500">Recording complete. Click to start a new recording.</span> : <span>Click the microphone to start recording.</span>
+          <span>Click the microphone to start recording.</span>
         )}
       </div>
-      {text && <p className="mt-2">{text}</p>}
     </div>
   );
 };

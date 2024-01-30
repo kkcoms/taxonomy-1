@@ -1,9 +1,10 @@
+//useRecordVoice.js
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { blobToBase64 } from "app/(speech)/src/utils/blobToBase64.js";
 import { createMediaStream } from "app/(speech)/src/utils/createMediaStream.js";
 
-export const useRecordVoice = () => {
+export const useRecordVoice = (onTranscriptionComplete) => {
   const [text, setText] = useState("");
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recording, setRecording] = useState(false);
@@ -15,6 +16,7 @@ export const useRecordVoice = () => {
       isRecording.current = true;
       mediaRecorder.start();
       setRecording(true);
+      console.log("useRecordVoice.js - Recording started");
     }
   };
 
@@ -23,6 +25,7 @@ export const useRecordVoice = () => {
       isRecording.current = false;
       mediaRecorder.stop();
       setRecording(false);
+      console.log("useRecordVoice.js - Recording stopped");
     }
   };
 
@@ -33,14 +36,19 @@ export const useRecordVoice = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          audio: base64data,
-        }),
+        body: JSON.stringify({ audio: base64data }),
       }).then((res) => res.json());
+      
       const { text } = response;
       setText(text);
+      console.log("useRecordVoice.js - Text received:", text);
+
+      // Call the callback function when the transcription is complete
+      if (onTranscriptionComplete) {
+        onTranscriptionComplete(text);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error in transcription:", error);
     }
   };
 
@@ -50,6 +58,7 @@ export const useRecordVoice = () => {
     mediaRecorder.onstart = () => {
       createMediaStream(stream);
       chunks.current = [];
+      console.log("useRecordVoice.js - MediaRecorder started");
     };
 
     mediaRecorder.ondataavailable = (ev) => {
@@ -59,6 +68,7 @@ export const useRecordVoice = () => {
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(chunks.current, { type: "audio/wav" });
       blobToBase64(audioBlob, getText);
+      console.log("useRecordVoice.js - MediaRecorder stopped");
     };
 
     setMediaRecorder(mediaRecorder);
@@ -66,9 +76,9 @@ export const useRecordVoice = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then(initialMediaRecorder);
+      navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(initialMediaRecorder)
+                            .catch((error) => console.error("MediaDevices Error:", error));
     }
   }, []);
 

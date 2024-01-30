@@ -1,11 +1,13 @@
-import { notFound, redirect } from "next/navigation"
-import { Post, User } from "@prisma/client"
+//page.tsx
 
-import { authOptions } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { getCurrentUser } from "@/lib/session"
-import { Editor } from "@/components/editor"
-import { Microphone } from "@/app/(speech)/src/app/components/Microphone"
+import React from 'react';
+import { notFound, redirect } from "next/navigation";
+import { Post, User } from "@prisma/client";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import EditorWrapper from 'app/(speech)/src/app/components/EditorWrapper.js';
+
 
 async function getPostForUser(postId: Post["id"], userId: User["id"]) {
   return await db.post.findFirst({
@@ -13,7 +15,7 @@ async function getPostForUser(postId: Post["id"], userId: User["id"]) {
       id: postId,
       authorId: userId,
     },
-  })
+  });
 }
 
 interface EditorPageProps {
@@ -21,25 +23,24 @@ interface EditorPageProps {
 }
 
 export default async function EditorPage({ params }: EditorPageProps) {
-  const user = await getCurrentUser()
+  const user = await getCurrentUser();
 
   if (!user) {
-    redirect(authOptions?.pages?.signIn || "/login")
+    redirect(authOptions?.pages?.signIn || "/login");
   }
 
-  const post = await getPostForUser(params.postId, user.id)
+  const post = await getPostForUser(params.postId, user.id);
 
   if (!post) {
-    notFound()
+    notFound();
   }
 
   return (
-    <><Editor
-      post={{
-        id: post.id,
-        title: post.title,
-        content: post.content,
-        published: post.published,
-      }} /><Microphone /></>
-  )
+    <EditorWrapper post={{
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      published: post.published,
+    }} />
+  );
 }

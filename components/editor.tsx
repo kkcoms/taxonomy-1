@@ -1,4 +1,4 @@
-// page.tsx
+// editor.tsx
 "use client"
 
 import * as React from "react"
@@ -17,6 +17,9 @@ import { postPatchSchema } from "@/lib/validations/post"
 import { buttonVariants } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { Icons } from "@/components/icons"
+import { useContext } from 'react';
+import TranscriptionContext from 'app/(speech)/src/app/components/TranscriptionContext.js';
+
 
 interface EditorProps {
   post: Pick<Post, "id" | "title" | "content" | "published">
@@ -25,6 +28,7 @@ interface EditorProps {
 type FormData = z.infer<typeof postPatchSchema>
 
 export function Editor({ post }: EditorProps) {
+  const { transcription } = useContext(TranscriptionContext);
   const { register, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(postPatchSchema),
   })
@@ -76,18 +80,32 @@ export function Editor({ post }: EditorProps) {
   React.useEffect(() => {
     if (isMounted) {
       initializeEditor()
-
-      return () => {
-        ref.current?.destroy()
-        ref.current = undefined
-      }
     }
   }, [isMounted, initializeEditor])
+  
+  React.useEffect(() => {
+    if (ref.current && transcription) {
+      const newBlock = {
+        type: "paragraph",
+        data: {
+          text: transcription
+        }
+      };
+  
+      // Assuming you need to update the editor with plain text:
+      // This is a placeholder; you will need to replace this with the correct method
+      // based on EditorJS's documentation or API.
+      ref.current.blocks.insert(newBlock.type, newBlock.data);
+    }
+  }, [transcription]);
+  
 
   async function onSubmit(data: FormData) {
     setIsSaving(true)
 
     const blocks = await ref.current?.save()
+
+    console.log("Blocks:", blocks)
 
     const response = await fetch(`/api/posts/${post.id}`, {
       method: "PATCH",
@@ -97,8 +115,12 @@ export function Editor({ post }: EditorProps) {
       body: JSON.stringify({
         title: data.title,
         content: blocks,
+        transcription: transcription,
       }),
     })
+    console.log("Transcription:", transcription)
+
+    console.log("Response:", response)
 
     setIsSaving(false)
 
