@@ -46,6 +46,15 @@ export function Editor({ post }: EditorProps) {
     const Code = (await import("@editorjs/code")).default
     const LinkTool = (await import("@editorjs/link")).default
     const InlineCode = (await import("@editorjs/inline-code")).default
+    const Quote = (await import("@editorjs/quote")).default
+    const Marker = (await import("@editorjs/marker")).default
+    const Delimiter = (await import("@editorjs/delimiter")).default
+    const Warning = (await import("@editorjs/warning")).default
+    const Image = (await import("@editorjs/image")).default
+    const Raw = (await import("@editorjs/raw")).default
+    const Checklist = (await import("@editorjs/checklist")).default
+    const Paragraph = (await import("@editorjs/paragraph")).default
+    const Underline = (await import("@editorjs/underline")).default
 
     const body = postPatchSchema.parse(post)
 
@@ -66,7 +75,17 @@ export function Editor({ post }: EditorProps) {
           inlineCode: InlineCode,
           table: Table,
           embed: Embed,
+          quote: Quote,
+          marker: Marker,
+          delimiter: Delimiter,
+          warning: Warning,
+          image: Image,
+          raw: Raw,
+          checklist: Checklist,
+          paragraph: Paragraph,
+          underline: Underline,
         },
+
       })
     }
   }, [post])
