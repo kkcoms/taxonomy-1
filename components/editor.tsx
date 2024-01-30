@@ -83,19 +83,23 @@ export function Editor({ post }: EditorProps) {
     }
   }, [isMounted, initializeEditor])
   
+  
   React.useEffect(() => {
     if (ref.current && transcription) {
-      const newBlock = {
-        type: "paragraph",
-        data: {
-          text: transcription
+      ref.current.save().then((savedData) => {
+        const blockCount = savedData.blocks.length;
+        const newBlock = {
+          type: "paragraph",
+          data: {
+            text: transcription
+          }
+        };
+    
+        // Insert the new block at the end of the editor content
+        if (ref.current?.blocks) {
+          ref.current.blocks.insert(newBlock.type, newBlock.data, {}, blockCount, true);
         }
-      };
-  
-      // Assuming you need to update the editor with plain text:
-      // This is a placeholder; you will need to replace this with the correct method
-      // based on EditorJS's documentation or API.
-      ref.current.blocks.insert(newBlock.type, newBlock.data);
+      });
     }
   }, [transcription]);
   

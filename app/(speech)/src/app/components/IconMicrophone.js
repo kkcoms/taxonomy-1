@@ -1,17 +1,11 @@
 const IconMicrophone = ({ className }) => {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      data-name="Layer 1"
-      viewBox="0 0 48 48"
-      className={className} // Add a className prop for external styling
-      role="img"
-      focusable="false"
-      aria-hidden="true"
-    >
-      <path d="M24 33a8 8 0 008-8V9a8 8 0 00-16 0v16a8 8 0 008 8zM20 9a4 4 0 018 0v16a4 4 0 01-8 0z"></path>
-      <path d="M38 25a2 2 0 00-4 0 10 10 0 01-20 0 a2 2 0 00-4 0 14 14 0 0012 13.84V43h-1a2 2 0 000 4h6a2 2 0 000-4h-1v-4.16A14 14 0 0038 25z"></path>
-    </svg>
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C11.2044 2 10.4413 2.31607 9.87868 2.87868C9.31607 3.44129 9 4.20435 9 5V12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12V5C15 4.20435 14.6839 3.44129 14.1213 2.87868C13.5587 2.31607 12.7956 2 12 2Z" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M19 10V12C19 13.8565 18.2625 15.637 16.9497 16.9497C15.637 18.2625 13.8565 19 12 19C10.1435 19 8.36301 18.2625 7.05025 16.9497C5.7375 15.637 5 13.8565 5 12V10" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 19V22" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
   );
 };
 
