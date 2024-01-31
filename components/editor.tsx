@@ -106,17 +106,21 @@ export function Editor({ post }: EditorProps) {
   React.useEffect(() => {
     if (ref.current && transcription) {
       ref.current.save().then((savedData) => {
-        const blockCount = savedData.blocks.length;
-        const newBlock = {
-          type: "paragraph",
-          data: {
+        // Find an existing transcription block or use the last block if none exists
+        const transcriptionBlockIndex = savedData.blocks.findIndex(block => block.data.transcription);
+        const targetBlock = transcriptionBlockIndex !== -1 ? savedData.blocks[transcriptionBlockIndex] : savedData.blocks[savedData.blocks.length - 1];
+        
+        if (targetBlock) {
+          // Update the existing transcription block with the new transcription
+            ref.current?.blocks.update(targetBlock.id || '', {
+            ...targetBlock.data,
             text: transcription
+          });
+        } else {
+          // Insert a new block and mark it as the transcription block
+          if (ref.current) {
+            ref.current.blocks.insert('paragraph', { text: transcription, transcription: true });
           }
-        };
-    
-        // Insert the new block at the end of the editor content
-        if (ref.current?.blocks) {
-          ref.current.blocks.insert(newBlock.type, newBlock.data, {}, blockCount, true);
         }
       });
     }
