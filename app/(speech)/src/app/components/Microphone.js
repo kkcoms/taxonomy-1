@@ -112,9 +112,9 @@ const Microphone = () => {
       <div style={buttonStyle} onClick={toggleRecording}>
         <IconMicrophone />
       </div>
-      <div className="live-transcription-output">
+            {/*<div className="live-transcription-output">
         <p>{accumulatedFinalTranscript.current}</p>
-      </div>
+      </div>*/}
     </>
   );
 };

@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     const subscriptionPlan = await getUserSubscriptionPlan(user.id)
 
     // If user is on a free plan.
-    // Check if user has reached limit of 3 posts.
+    // Check if user has reached limit of 30 posts.
     if (!subscriptionPlan?.isPro) {
       const count = await db.post.count({
         where: {
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         },
       })
 
-      if (count >= 4) {
+      if (count >= 30) {
         throw new RequiresProPlanError()
       }
     }

@@ -36,7 +36,7 @@ export function PostCreateButton({
     if (!response?.ok) {
       if (response.status === 402) {
         return toast({
-          title: "Limit of 4 posts reached.",
+          title: "Limit of 30 posts reached.",
           description: "Please upgrade to the PRO plan.",
           variant: "destructive",
         })
