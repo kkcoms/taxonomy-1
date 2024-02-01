@@ -15,6 +15,7 @@ const Microphone = () => {
   const accumulatedFinalTranscript = useRef(""); // Ref to keep track of the accumulated final transcript
   const { setTranscription } = useContext(TranscriptionContext);
   const editorRef = useRef<EditorJS>(null);
+  const recognitionActive = useRef(false); // Ref to track active state of recognition
 
   // Define the function before using it in the hook
   const handleTranscriptionComplete = (transcriptionText) => {
@@ -26,6 +27,26 @@ const Microphone = () => {
   // Initialize webkitSpeechRecognition only if running in the browser
   const recognition = typeof window !== 'undefined' ? new (window.webkitSpeechRecognition || window.SpeechRecognition)() : null;
 
+  const toggleRecording = () => {
+    setIsRecording(!isRecording);
+    recognitionActive.current = !isRecording; // Update the active state
+    if (!isRecording) {
+      accumulatedFinalTranscript.current = ""; // Clear the accumulated transcript
+      if (recognition) {
+        console.log("Starting recognition and recording");
+        recognition.start();
+        startRecording(); // Start audio recording as well
+      }
+    } else {
+      if (recognition) {
+        console.log("Aborting recognition and stopping recording");
+        recognition.abort(); // Abort speech recognition
+        stopRecording(); // Stop audio recording
+        setTranscription(""); // Clear the transcription context
+      }
+    }
+  };
+
   useEffect(() => {
     if (recognition) {
       recognition.continuous = true;
@@ -33,6 +54,9 @@ const Microphone = () => {
       recognition.lang = 'es-MX';
 
       recognition.onresult = (event) => {
+        if (!recognitionActive.current) {
+          return; // Ignore results if recognition is not active
+        }
         let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
@@ -51,28 +75,10 @@ const Microphone = () => {
       };
 
       recognition.onend = () => {
-        if (isRecording) {
-          recognition.start(); // Restart recognition if still recording
-        }
+        console.log("Recognition service has ended");
       };
     }
-  }, [isRecording, recognition]);
-
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    if (!isRecording) {
-      accumulatedFinalTranscript.current = ""; // Clear the accumulated transcript
-      if (recognition) {
-        recognition.start();
-        startRecording(); // Start audio recording as well
-      }
-    } else {
-      if (recognition) {
-        recognition.stop();
-        stopRecording(); // Stop audio recording
-      }
-    }
-  };
+  }, [recognition]);
 
   // Your existing button style logic
   const buttonStyle = {
