@@ -1,7 +1,7 @@
-// editor.tsx
+// editor.tsx -- https://chat.openai.com/c/3e521a79-0c0b-433f-8715-20c32c7b43fa
 "use client"
 
-import * as React from "react"
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import EditorJS from "@editorjs/editorjs"
@@ -102,29 +102,50 @@ export function Editor({ post }: EditorProps) {
     }
   }, [isMounted, initializeEditor])
   
+  // Initialize the ref to keep track of the last interim transcription
+  const lastInterimRef = useRef('');
+
+  // Define the debounce function outside of your component
+  const debounce = (func, timeout = 300) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+  };
+
+ // Function to update the editor with the new transcription block
+ const updateEditorWithTranscription = useCallback((transcription) => {
+  if (ref.current) {
+    ref.current.save().then((savedData) => {
+      const lastBlock = savedData.blocks[savedData.blocks.length - 1];
+
+      if (lastBlock && lastBlock.type === 'paragraph') {
+        // Update the last paragraph block with the new transcription content, 
+        // appending it to the existing text
+        ref.current.blocks.update(lastBlock.id, {
+          ...lastBlock.data,
+          text: `${lastBlock.data.text} ${transcription}`.trim(),
+        });
+      } else {
+        // If the last block is not a paragraph, insert a new one
+        ref.current.blocks.insert('paragraph', { text: transcription }, {}, savedData.blocks.length, true);
+      }
+    });
+  }
+}, [ref]);
+
+
+  // Create a debounced version of the update function
+  const debouncedUpdateEditor = useMemo(() => debounce(updateEditorWithTranscription, 600), [updateEditorWithTranscription]);
   
-  React.useEffect(() => {
-    if (ref.current && transcription) {
-      ref.current.save().then((savedData) => {
-        // Find an existing transcription block or use the last block if none exists
-        const transcriptionBlockIndex = savedData.blocks.findIndex(block => block.data.transcription);
-        const targetBlock = transcriptionBlockIndex !== -1 ? savedData.blocks[transcriptionBlockIndex] : savedData.blocks[savedData.blocks.length - 1];
-        
-        if (targetBlock) {
-          // Update the existing transcription block with the new transcription
-            ref.current?.blocks.update(targetBlock.id || '', {
-            ...targetBlock.data,
-            text: transcription
-          });
-        } else {
-          // Insert a new block and mark it as the transcription block
-          if (ref.current) {
-            ref.current.blocks.insert('paragraph', { text: transcription, transcription: true });
-          }
-        }
-      });
+  useEffect(() => {
+    if (ref.current && transcription && transcription !== lastInterimRef.current) {
+      lastInterimRef.current = transcription; // Update the last interim result
+      // Insert the transcription into a new paragraph block after debouncing
+      debouncedUpdateEditor(transcription);
     }
-  }, [transcription]);
+  }, [transcription, debouncedUpdateEditor]);
   
 
   async function onSubmit(data: FormData) {

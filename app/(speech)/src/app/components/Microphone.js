@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useRecordVoice } from "app/(speech)/src/hooks/useRecordVoice.js";
 import { IconMicrophone } from "app/(speech)/src/app/components/IconMicrophone.js";
 import TranscriptionContext from './TranscriptionContext';
+import { useTranscription } from './TranscriptionContext';
 
 // Dynamic import for EditorJS with SSR disabled
 const EditorJS = dynamic(() => import('@editorjs/editorjs'), { ssr: false });
@@ -16,6 +17,9 @@ const Microphone = () => {
   const { setTranscription } = useContext(TranscriptionContext);
   const editorRef = useRef<EditorJS>(null);
   const recognitionActive = useRef(false); // Ref to track active state of recognition
+  const [finalTranscription, setFinalTranscription] = useState(''); // Add this line to define the state
+  const recognitionActiveRef = useRef({ current: true, started: false });
+
 
   // Define the function before using it in the hook
   const handleTranscriptionComplete = (transcriptionText) => {
@@ -54,30 +58,50 @@ const Microphone = () => {
       recognition.lang = 'es-MX';
 
       recognition.onresult = (event) => {
-        if (!recognitionActive.current) {
-          return; // Ignore results if recognition is not active
-        }
         let interimTranscript = '';
+        let finalTranscript = '';
+      
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            accumulatedFinalTranscript.current += event.results[i][0].transcript;
+            finalTranscript += event.results[i][0].transcript;
+            // Update the context/state with the final result
+            setFinalTranscription(finalTranscript);
           } else {
             interimTranscript += event.results[i][0].transcript;
+            // Update the context/state with the interim result
+            setTranscription(interimTranscript);
           }
         }
-
-        const currentTranscript = accumulatedFinalTranscript.current + interimTranscript;
-        setTranscription(currentTranscript);
-
-        if (editorRef.current) {
-          editorRef.current.blocks.insert('paragraph', { text: currentTranscript }, {}, 0, true);
+      };
+      recognition.onend = () => {
+        console.log("Speech recognition service ended");
+        // Check the flag using the ref before restarting
+        if (recognitionActiveRef.current) {
+          console.log("Restarting speech recognition service...");
+          // Set a timeout to ensure the previous session ends before restarting
+          setTimeout(() => {
+            recognition.start();
+          }, 100); // You can adjust the timeout duration as needed
         }
       };
-
-      recognition.onend = () => {
-        console.log("Recognition service has ended");
-      };
+  
+      // Only start the recognition service if it's not already active
+      if (recognitionActiveRef.current && !recognitionActiveRef.started) {
+        console.log("Starting speech recognition service...");
+        recognition.start();
+        recognitionActiveRef.started = true; // Set a flag indicating the service has started
+      }
     }
+  
+    // Clean up function
+    return () => {
+      recognitionActiveRef.current = false; // Set the ref to false to prevent restarts
+      if (recognition) {
+        recognition.onend = null; // Remove the onend handler
+        recognition.stop();
+        console.log("Stopping speech recognition service...");
+      }
+    };
   }, [recognition]);
 
   // Your existing button style logic
